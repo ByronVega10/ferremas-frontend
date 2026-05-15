@@ -9,6 +9,11 @@ export default function Navbar() {
   const { cart } = useCart();
   const { user, logout } = useAuth();
 
+  const totalItems = cart.reduce(
+    (acc, item) => acc + item.quantity, 0,
+  )
+;
+
   return (
     <nav className="bg-white shadow-md">
       <div className="container mx-auto flex items-center justify-between p-4">
@@ -47,7 +52,7 @@ export default function Navbar() {
           >
             <ShoppingCart className="w-6 h-6" />
 
-            {cart.length > 0 && (
+            {totalItems > 0 && (
               <span
                 className="
                   absolute
@@ -64,7 +69,7 @@ export default function Navbar() {
                   justify-center
                 "
               >
-                {cart.length}
+                {totalItems}
               </span>
             )}
           </Link>

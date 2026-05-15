@@ -19,6 +19,10 @@ interface CartContextType {
   addToCart: (product: Product) => void;
 
   removeFromCart: (productId: number) => void;
+
+  increaseQuantity: (productId: number) => void;
+
+  decreaseQuantity: (productId: number) => void;
 }
 
 const CartContext = createContext<CartContextType | null>(
@@ -33,29 +37,73 @@ export function CartProvider({
   const [cart, setCart] = useState<CartItem[]>([]);
 
   const addToCart = (product: Product) => {
-    setCart((prev) => {
-      const existingProduct = prev.find(
-        (item) => item.id === product.id,
-      );
+    setCart((prevCart) => {
+
+      const existingProduct =
+        prevCart.find(
+          (item) => item.id === product.id,
+        );
 
       if (existingProduct) {
-        return prev.map((item) =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-              }
-            : item,
-        );
+
+        return prevCart.map((item) => {
+
+          if (item.id === product.id) {
+
+            return {
+              ...item,
+              quantity: item.quantity + 1,
+            };
+          }
+
+          return item;
+        });
       }
 
       return [
-        ...prev,
+        ...prevCart,
         {
           ...product,
           quantity: 1,
         },
       ];
+    });
+  };
+
+  const increaseQuantity = (productId: number) => {
+    setCart((prevCart) =>
+      prevCart.map((item) => {
+
+        if (item.id === productId) {
+
+          return {
+            ...item,
+            quantity: item.quantity + 1,
+          };
+        }
+
+          return item;
+      }),
+    );
+  };
+
+  const decreaseQuantity = (productId: number) => {
+    setCart((prevCart) => {
+
+      return prevCart
+        .map((item) => {
+
+          if (item.id === productId) {
+
+            return {
+              ...item,
+              quantity: item.quantity - 1,
+            };
+          }
+
+          return item;
+        })
+        .filter((item) => item.quantity > 0);
     });
   };
 
@@ -71,6 +119,8 @@ export function CartProvider({
         cart,
         addToCart,
         removeFromCart,
+        increaseQuantity,
+        decreaseQuantity,
       }}
     >
       {children}

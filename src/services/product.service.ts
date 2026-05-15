@@ -7,6 +7,16 @@ export const getProducts = async () => {
   return response.data;
 };
 
+export const getProductsByCategory =
+  async (categoryId: number) => {
+
+    const response = await api.get(
+      `/products/category/${categoryId}`,
+    );
+
+    return response.data;
+  };
+  
 export const createProduct = async (
   data: any,
 ) => {
