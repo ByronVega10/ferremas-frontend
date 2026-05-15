@@ -17,9 +17,12 @@ interface AuthContextType {
 
   token: string | null;
 
+  loading: boolean;
+
   login: (token: string) => void;
 
   logout: () => void;
+
 }
 
 const AuthContext = createContext<AuthContextType | null>(
@@ -39,6 +42,9 @@ export function AuthProvider({
     null,
   );
 
+  const [loading, setLoading] =
+  useState(true);
+
   useEffect(() => {
     const storedToken =
       localStorage.getItem('token');
@@ -51,6 +57,7 @@ export function AuthProvider({
 
       setUser(decoded);
     }
+    setLoading(false);
   }, []);
 
   const login = (newToken: string) => {
@@ -77,6 +84,7 @@ export function AuthProvider({
       value={{
         user,
         token,
+        loading,
         login,
         logout,
       }}
