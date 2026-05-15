@@ -8,9 +8,13 @@ import {
 } from 'react';
 
 import { Product } from '@/types/product';
+import axios from '@/lib/axios';
+import { useAuth } from './AuthContext';
+import { useEffect } from 'react';
 
 interface CartItem extends Product {
   quantity: number;
+  cartItemId: number; // ID del item en el carrito (opcional, para futuras mejoras)
 }
 
 interface CartContextType {
@@ -35,20 +39,95 @@ export function CartProvider({
   children: ReactNode;
 }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const { user } = useAuth();
 
-  const addToCart = (product: Product) => {
-    setCart((prevCart) => {
+  useEffect(() => {
+    const loadCart = async () => {
 
-      const existingProduct =
-        prevCart.find(
-          (item) => item.id === product.id,
+      try {
+        if (!user) return;
+
+        const response = await axios.get(
+          `/cart/${user.sub}`,
         );
 
-      if (existingProduct) {
+        const formattedCart = response.data.items.map(
+          (item: any) => ({
+            ...item.product,
+            quantity: item.quantity,
+            cartItemId: item.id,
+          }),
+        );
 
-        return prevCart.map((item) => {
+        setCart(formattedCart);
 
-          if (item.id === product.id) {
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadCart();
+
+  }, [user]);
+
+  const addToCart = async (product: Product) => {
+
+    try {
+
+      if (!user) {
+        alert('Debes iniciar sesión');
+        return;
+      }
+
+      // 🔥 guardar en backend
+      await axios.post('/cart/add', {
+        userId: user.sub,
+        productId: product.id,
+        quantity: 1,
+      });
+
+      // 🔥 mantener UI actual
+      const response = await axios.get(
+        `/cart/${user.sub}`,
+      );
+
+      const formattedCart = response.data.items.map(
+        (item: any) => ({
+          ...item.product,
+          quantity: item.quantity,
+          cartItemId: item.id,
+        }),
+      );
+
+      setCart(formattedCart);
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const increaseQuantity = async (
+    productId: number,
+  ) => {
+
+    try {
+      const item = cart.find(
+        (item) => item.id === productId,
+      );
+
+      if (!item) return;
+
+      await axios.patch(
+        `/cart/${item.cartItemId}`,
+        {
+          quantity: item.quantity + 1,
+        },
+      );
+
+      setCart((prevCart) =>
+        prevCart.map((item) => {
+
+          if (item.id === productId) {
 
             return {
               ...item,
@@ -57,41 +136,52 @@ export function CartProvider({
           }
 
           return item;
-        });
+        }),
+      );
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const decreaseQuantity = async (
+    productId: number,
+  ) => {
+
+    try {
+      const item = cart.find(
+        (item) => item.id === productId,
+      );
+
+      if (!item) return;
+
+      // eliminar si llega a 0
+      if (item.quantity === 1) {
+
+        await axios.delete(
+          `/cart/${item.cartItemId}`,
+        );
+
+        setCart((prev) =>
+          prev.filter(
+            (item) => item.id !== productId,
+          ),
+        );
+
+        return;
       }
 
-      return [
-        ...prevCart,
+      // actualizar DB
+      await axios.patch(
+        `/cart/${item.cartItemId}`,
         {
-          ...product,
-          quantity: 1,
+          quantity: item.quantity - 1,
         },
-      ];
-    });
-  };
+      );
 
-  const increaseQuantity = (productId: number) => {
-    setCart((prevCart) =>
-      prevCart.map((item) => {
-
-        if (item.id === productId) {
-
-          return {
-            ...item,
-            quantity: item.quantity + 1,
-          };
-        }
-
-          return item;
-      }),
-    );
-  };
-
-  const decreaseQuantity = (productId: number) => {
-    setCart((prevCart) => {
-
-      return prevCart
-        .map((item) => {
+      // actualizar frontend
+      setCart((prevCart) =>
+        prevCart.map((item) => {
 
           if (item.id === productId) {
 
@@ -102,15 +192,34 @@ export function CartProvider({
           }
 
           return item;
-        })
-        .filter((item) => item.quantity > 0);
-    });
+        }),
+      );
+
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart((prev) =>
-      prev.filter((item) => item.id !== productId),
-    );
+  const removeFromCart = async (productId: number) => {
+    try {
+      
+      const item = cart.find(
+        (item) => item.id === productId,
+      );
+
+      if (!item) return;
+
+      await axios.delete(
+        `/cart/${item.cartItemId}`,
+      );
+
+      setCart((prev) =>
+        prev.filter((item) => item.id !== productId),
+      );
+
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

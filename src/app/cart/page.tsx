@@ -1,6 +1,7 @@
 'use client';
 
 import { useCart } from '@/contexts/CartContext';
+import axios from '@/lib/axios';
 
 export default function CartPage() {
 
@@ -10,6 +11,30 @@ export default function CartPage() {
     increaseQuantity,
     decreaseQuantity,
   } = useCart();
+
+  const handleCheckout = async () => {
+  try {
+    // 1. crear orden (backend usa JWT, no userId)
+    const orderRes = await axios.post('/orders/checkout');
+    console.log('ORDER RESPONSE:', orderRes.data);
+
+    const orderId = orderRes.data.orderId;
+
+    // 2. crear pago en MercadoPago
+    const paymentRes = await axios.post('/payments/create', {
+      orderId,
+    });
+    console.log('PAYMENT RESPONSE:', paymentRes.data);
+
+    // 3. redirigir a MercadoPago
+    window.location.href = paymentRes.data.init_point;
+
+  } catch (error: any) {
+    console.log('ERROR COMPLETO:', error);
+    console.log('ERROR DATA:', error.response?.data);
+    console.log('ERROR STATUS:', error.response?.status);
+  }
+};
 
   // Total dinero
 
@@ -186,6 +211,7 @@ export default function CartPage() {
             </div>
 
             <button
+              onClick={handleCheckout}
               className="
                 w-full
                 bg-green-600
