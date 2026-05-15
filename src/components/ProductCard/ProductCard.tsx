@@ -1,12 +1,19 @@
+'use client';
+
 import { Product } from '@/types/product';
+import { useCart } from '@/contexts/CartContext';
 
 interface Props {
   product: Product;
 }
 
+
 export default function ProductCard({
   product,
 }: Props) {
+
+  const { addToCart } = useCart();
+
   return (
     <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-xl transition">
       
@@ -36,6 +43,7 @@ export default function ProductCard({
       </div>
 
       <button
+        onClick={() => addToCart(product)}
         className="
           mt-4
           w-full
