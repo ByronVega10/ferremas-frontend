@@ -80,11 +80,19 @@ export function CartProvider({
       }
 
       // 🔥 guardar en backend
-      await axios.post('/cart/add', {
-        userId: user.sub,
-        productId: product.id,
-        quantity: 1,
-      });
+      console.log('USER:', JSON.stringify(user, null, 2));
+      console.log('PRODUCT:', JSON.stringify(product, null, 2));
+
+      const responseAdd = await axios.post(
+        '/cart/add',
+        {
+          userId: user.sub,
+          productId: product.id,
+          quantity: 1,
+        },
+      );
+
+      console.log(responseAdd.data);
 
       // 🔥 mantener UI actual
       const response = await axios.get(
@@ -101,10 +109,20 @@ export function CartProvider({
 
       setCart(formattedCart);
 
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    } catch (error: any) {
+        console.log('ERROR COMPLETO:', error);
+
+        console.log(
+          'ERROR DATA:',
+          JSON.stringify(error.response?.data, null, 2),
+        );
+
+        console.log(
+        'ERROR STATUS:',
+          error.response?.status,
+        );
+      }
+    };
 
   const increaseQuantity = async (
     productId: number,
