@@ -15,6 +15,8 @@ import {
 
 import ProductCard from '@/components/ProductCard/ProductCard';
 
+import api from '@/lib/axios';
+
 export default function CategoriesPage() {
 
   const [categories, setCategories] =
@@ -29,9 +31,17 @@ export default function CategoriesPage() {
   const [loading, setLoading] =
     useState(false);
 
+  const [usdValue, setUsdValue] =
+    useState<number | null>(null);
+
+  const [euroValue, setEuroValue] =
+    useState<number | null>(null);
+
   useEffect(() => {
 
     loadCategories();
+
+    loadExchangeRates();
 
   }, []);
 
@@ -47,6 +57,29 @@ export default function CategoriesPage() {
     } catch (error) {
 
       console.error(error);
+    }
+  };
+
+  const loadExchangeRates = async () => {
+
+    try {
+
+      const usdResponse =
+        await api.get('/exchange/usd');
+
+      const euroResponse =
+        await api.get('/exchange/euro');
+
+      setUsdValue(usdResponse.data.value);
+
+      setEuroValue(euroResponse.data.value);
+
+    } catch (error) {
+
+      console.error(
+        'Error cargando divisas',
+        error,
+      );
     }
   };
 
@@ -94,49 +127,49 @@ export default function CategoriesPage() {
 
       {/* Categories */}
 
-    <div
+      <div
         className="
-            grid
-            sm:grid-cols-2
-            lg:grid-cols-3
-            xl:grid-cols-4
-            gap-6
-            mb-12
+          grid
+          sm:grid-cols-2
+          lg:grid-cols-3
+          xl:grid-cols-4
+          gap-6
+          mb-12
         "
-    >
+      >
 
         {categories.map((category) => (
 
-            <button
-                key={category.id}
-                onClick={() =>
-                    handleCategoryClick(
-                        category.id,
-                    )
-                }
-                className={`
-                    rounded-2xl
-                    shadow-md
-                    p-10
-                    text-2xl
-                    font-bold
-                    transition
-                    hover:scale-105
+          <button
+            key={category.id}
+            onClick={() =>
+              handleCategoryClick(
+                category.id,
+              )
+            }
+            className={`
+              rounded-2xl
+              shadow-md
+              p-10
+              text-2xl
+              font-bold
+              transition
+              hover:scale-105
 
-                    ${
-                        selectedCategory ===
-                        category.id
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-800 hover:bg-blue-100'
-                    }
-                `}
-            >
-                {category.name}
-            </button>
+              ${
+                selectedCategory ===
+                category.id
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-800 hover:bg-blue-100'
+              }
+            `}
+          >
+            {category.name}
+          </button>
 
-    ))}
+        ))}
 
-    </div>
+      </div>
 
       {/* Products */}
 
@@ -163,6 +196,8 @@ export default function CategoriesPage() {
             <ProductCard
               key={product.id}
               product={product}
+              usdValue={usdValue ?? undefined}
+              euroValue={euroValue ?? undefined}
             />
 
           ))}

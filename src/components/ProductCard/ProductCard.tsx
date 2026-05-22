@@ -5,20 +5,54 @@ import { useCart } from '@/contexts/CartContext';
 
 interface Props {
   product: Product;
+  usdValue?: number; 
+  euroValue?: number;
 }
 
 
 export default function ProductCard({
   product,
+  usdValue,
+  euroValue
 }: Props) {
 
   const { addToCart } = useCart();
 
+  const priceInUsd = 
+    usdValue 
+      ? (product.price / usdValue).toFixed(2) 
+      : null; 
+    
+  const priceInEuro = 
+    euroValue 
+      ? (product.price / euroValue).toFixed(2) 
+      : null;
+
   return (
-    <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-xl transition">
+    <div 
+      className="
+        bg-white 
+        rounded-xl 
+        shadow-md 
+        p-4 
+        hover:shadow-xl 
+        transition
+      "
+    >
       
       {/* Fake Image */}
-      <div className="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
+      
+      <div 
+        className="
+          h-48 
+          bg-gray-200 
+          rounded-lg 
+          mb-4 
+          flex 
+          items-center 
+          justify-center
+        "
+      >
         <span className="text-gray-500">
           Imagen Producto
         </span>
@@ -33,13 +67,30 @@ export default function ProductCard({
       </p>
 
       <div className="mt-4">
-        <p className="text-2xl font-bold text-blue-600">
-          ${product.price}
-        </p>
+        
+        {/* Precio CLP */} 
+        <p className="text-2xl font-bold text-blue-600"> 
+          ${product.price.toLocaleString('es-CL')} CLP 
+        </p> 
+        
+        {/* USD */} 
+        {priceInUsd && ( 
+          <p className="text-sm text-gray-600 mt-1"> 
+            USD ${priceInUsd} 
+          </p> 
+        )}
 
-        <p className="text-sm text-gray-500">
-          Stock: {product.stock}
+        {/* EUR */} 
+        {priceInEuro && (
+          <p className="text-sm text-gray-600"> 
+            EUR €{priceInEuro} 
+          </p> 
+        )} 
+        
+        <p className="text-sm text-gray-500 mt-2"> 
+          Stock: {product.stock} 
         </p>
+        
       </div>
 
       <button
