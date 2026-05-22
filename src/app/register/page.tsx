@@ -2,19 +2,26 @@
 
 import { useState } from 'react';
 
+import Link from 'next/link';
+
 import { useRouter } from 'next/navigation';
 
-import { registerRequest } from '@/services/auth.service';
+import {
+  registerRequest,
+} from '@/services/auth.service';
 
 export default function RegisterPage() {
+
   const router = useRouter();
 
-  const [name, setName] = useState('');
+  const [name, setName] =
+    useState('');
 
   const [lastname, setLastname] =
     useState('');
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] =
+    useState('');
 
   const [password, setPassword] =
     useState('');
@@ -25,9 +32,11 @@ export default function RegisterPage() {
   const handleRegister = async (
     e: React.FormEvent,
   ) => {
+
     e.preventDefault();
 
     try {
+
       setLoading(true);
 
       await registerRequest({
@@ -37,14 +46,22 @@ export default function RegisterPage() {
         password,
       });
 
-      alert('Usuario registrado');
+      alert(
+        'Cuenta creada correctamente',
+      );
 
       router.push('/login');
+
     } catch (error) {
+
       console.error(error);
 
-      alert('Error al registrar usuario');
+      alert(
+        'Error al crear la cuenta',
+      );
+
     } finally {
+
       setLoading(false);
     }
   };
@@ -60,6 +77,7 @@ export default function RegisterPage() {
         p-6
       "
     >
+
       <div
         className="
           bg-white
@@ -70,6 +88,7 @@ export default function RegisterPage() {
           max-w-md
         "
       >
+
         <h1
           className="
             text-3xl
@@ -84,8 +103,9 @@ export default function RegisterPage() {
 
         <form
           onSubmit={handleRegister}
-          className="space-y-5"
+          className="space-y-6"
         >
+
           <div>
             <label
               className="
@@ -113,9 +133,6 @@ export default function RegisterPage() {
                 px-4
                 py-3
                 text-gray-800
-                focus:outline-none
-                focus:ring-2
-                focus:ring-blue-500
               "
               required
             />
@@ -148,9 +165,6 @@ export default function RegisterPage() {
                 px-4
                 py-3
                 text-gray-800
-                focus:outline-none
-                focus:ring-2
-                focus:ring-blue-500
               "
               required
             />
@@ -183,9 +197,6 @@ export default function RegisterPage() {
                 px-4
                 py-3
                 text-gray-800
-                focus:outline-none
-                focus:ring-2
-                focus:ring-blue-500
               "
               required
             />
@@ -218,9 +229,6 @@ export default function RegisterPage() {
                 px-4
                 py-3
                 text-gray-800
-                focus:outline-none
-                focus:ring-2
-                focus:ring-blue-500
               "
               required
             />
@@ -231,21 +239,45 @@ export default function RegisterPage() {
             disabled={loading}
             className="
               w-full
-              bg-green-600
+              bg-blue-600
               text-white
               py-3
               rounded-lg
-              hover:bg-green-700
+              hover:bg-blue-700
               transition
               font-semibold
             "
           >
             {loading
-              ? 'Registrando...'
+              ? 'Creando cuenta...'
               : 'Crear Cuenta'}
           </button>
         </form>
+
+        <p
+          className="
+            text-center
+            text-sm
+            text-gray-600
+            mt-6
+          "
+        >
+          ¿Ya tienes cuenta?{' '}
+
+          <Link
+            href="/login"
+            className="
+              text-blue-600
+              hover:underline
+              font-medium
+            "
+          >
+            Inicia sesión
+          </Link>
+        </p>
+
       </div>
+
     </main>
   );
 }

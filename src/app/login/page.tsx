@@ -8,6 +8,8 @@ import { loginRequest } from '@/services/auth.service';
 
 import { useAuth } from '@/contexts/AuthContext';
 
+import Link from 'next/link';
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -175,6 +177,27 @@ export default function LoginPage() {
               : 'Ingresar'}
           </button>
         </form>
+        <p
+          className="
+            text-center
+            text-sm
+            text-gray-600
+            mt-6
+          "
+        >
+          ¿No tienes cuenta?{' '}
+
+          <Link
+            href="/register"
+            className="
+              text-blue-600
+              hover:underline
+              font-medium
+            "
+          >
+            Crear cuenta
+          </Link>
+        </p>
       </div>
     </main>
   );
