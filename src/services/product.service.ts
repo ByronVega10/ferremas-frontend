@@ -16,13 +16,25 @@ export const getProductsByCategory =
 
     return response.data;
   };
-  
+
 export const createProduct = async (
   data: any,
 ) => {
 
   const response = await api.post(
     '/products',
+    data,
+  );
+
+  return response.data;
+};
+
+export const updateProduct = async (
+  id: number,
+  data: any,
+) => {
+  const response = await api.patch(
+    `/products/${id}`,
     data,
   );
 
