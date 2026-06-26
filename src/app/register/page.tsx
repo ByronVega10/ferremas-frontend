@@ -10,6 +10,80 @@ import {
   registerRequest,
 } from '@/services/auth.service';
 
+type ValidationErrors = {
+  name?: string;
+  lastname?: string;
+  email?: string;
+  password?: string;
+  general?: string;
+};
+
+const nameRegex =
+  /^[A-Za-zÀ-ÿ\s'-]+$/;
+
+const emailRegex =
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const validateRegisterData = (
+  name: string,
+  lastname: string,
+  email: string,
+  password: string,
+): ValidationErrors => {
+
+  const errors: ValidationErrors = {};
+
+  const cleanName = name.trim();
+  const cleanLastname = lastname.trim();
+  const cleanEmail = email.trim();
+
+  if (!cleanName) {
+    errors.name = 'El nombre es obligatorio';
+  } else if (cleanName.length < 2) {
+    errors.name =
+      'El nombre debe tener al menos 2 caracteres';
+  } else if (!nameRegex.test(cleanName)) {
+    errors.name =
+      'El nombre solo puede contener letras';
+  }
+
+  if (!cleanLastname) {
+    errors.lastname =
+      'El apellido es obligatorio';
+  } else if (cleanLastname.length < 2) {
+    errors.lastname =
+      'El apellido debe tener al menos 2 caracteres';
+  } else if (!nameRegex.test(cleanLastname)) {
+    errors.lastname =
+      'El apellido solo puede contener letras';
+  }
+
+  if (!cleanEmail) {
+    errors.email = 'El correo es obligatorio';
+  } else if (!emailRegex.test(cleanEmail)) {
+    errors.email = 'Ingresa un correo valido';
+  }
+
+  if (!password) {
+    errors.password =
+      'La contraseña es obligatoria';
+  } else if (password.length < 8) {
+    errors.password =
+      'La contraseña debe tener al menos 8 caracteres';
+  } else if (!/[A-Z]/.test(password)) {
+    errors.password =
+      'Debe incluir al menos una letra mayuscula';
+  } else if (!/[a-z]/.test(password)) {
+    errors.password =
+      'Debe incluir al menos una letra minuscula';
+  } else if (!/\d/.test(password)) {
+    errors.password =
+      'Debe incluir al menos un numero';
+  }
+
+  return errors;
+};
+
 export default function RegisterPage() {
 
   const router = useRouter();
@@ -29,6 +103,9 @@ export default function RegisterPage() {
   const [loading, setLoading] =
     useState(false);
 
+  const [errors, setErrors] =
+    useState<ValidationErrors>({});
+
   const handleRegister = async (
     e: React.FormEvent,
   ) => {
@@ -37,12 +114,30 @@ export default function RegisterPage() {
 
     try {
 
+      const validationErrors =
+        validateRegisterData(
+          name,
+          lastname,
+          email,
+          password,
+        );
+
+      if (
+        Object.keys(validationErrors).length >
+        0
+      ) {
+        setErrors(validationErrors);
+        return;
+      }
+
+      setErrors({});
+
       setLoading(true);
 
       await registerRequest({
-        name,
-        lastname,
-        email,
+        name: name.trim(),
+        lastname: lastname.trim(),
+        email: email.trim(),
         password,
       });
 
@@ -55,6 +150,11 @@ export default function RegisterPage() {
     } catch (error) {
 
       console.error(error);
+
+      setErrors({
+        general:
+          'No fue posible crear la cuenta. Intenta nuevamente.',
+      });
 
       alert(
         'Error al crear la cuenta',
@@ -106,6 +206,23 @@ export default function RegisterPage() {
           className="space-y-6"
         >
 
+          {errors.general && (
+            <p
+              className="
+                rounded-lg
+                border
+                border-red-200
+                bg-red-50
+                px-4
+                py-3
+                text-sm
+                text-red-700
+              "
+            >
+              {errors.general}
+            </p>
+          )}
+
           <div>
             <label
               className="
@@ -123,7 +240,16 @@ export default function RegisterPage() {
               type="text"
               value={name}
               onChange={(e) =>
-                setName(e.target.value)
+                {
+                  setName(e.target.value);
+
+                  if (errors.name) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      name: undefined,
+                    }));
+                  }
+                }
               }
               className="
                 w-full
@@ -136,6 +262,18 @@ export default function RegisterPage() {
               "
               required
             />
+
+            {errors.name && (
+              <p
+                className="
+                  mt-2
+                  text-sm
+                  text-red-600
+                "
+              >
+                {errors.name}
+              </p>
+            )}
           </div>
 
           <div>
@@ -155,7 +293,16 @@ export default function RegisterPage() {
               type="text"
               value={lastname}
               onChange={(e) =>
-                setLastname(e.target.value)
+                {
+                  setLastname(e.target.value);
+
+                  if (errors.lastname) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      lastname: undefined,
+                    }));
+                  }
+                }
               }
               className="
                 w-full
@@ -168,6 +315,18 @@ export default function RegisterPage() {
               "
               required
             />
+
+            {errors.lastname && (
+              <p
+                className="
+                  mt-2
+                  text-sm
+                  text-red-600
+                "
+              >
+                {errors.lastname}
+              </p>
+            )}
           </div>
 
           <div>
@@ -187,7 +346,16 @@ export default function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) =>
-                setEmail(e.target.value)
+                {
+                  setEmail(e.target.value);
+
+                  if (errors.email) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      email: undefined,
+                    }));
+                  }
+                }
               }
               className="
                 w-full
@@ -200,6 +368,18 @@ export default function RegisterPage() {
               "
               required
             />
+
+            {errors.email && (
+              <p
+                className="
+                  mt-2
+                  text-sm
+                  text-red-600
+                "
+              >
+                {errors.email}
+              </p>
+            )}
           </div>
 
           <div>
@@ -219,7 +399,16 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) =>
-                setPassword(e.target.value)
+                {
+                  setPassword(e.target.value);
+
+                  if (errors.password) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      password: undefined,
+                    }));
+                  }
+                }
               }
               className="
                 w-full
@@ -232,6 +421,18 @@ export default function RegisterPage() {
               "
               required
             />
+
+            {errors.password && (
+              <p
+                className="
+                  mt-2
+                  text-sm
+                  text-red-600
+                "
+              >
+                {errors.password}
+              </p>
+            )}
           </div>
 
           <button
